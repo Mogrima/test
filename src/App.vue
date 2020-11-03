@@ -1,10 +1,6 @@
 <template>
   <v-app>
     <v-main>
-          <!-- <v-row>
-           
-            
-          </v-row> -->
       <Table :list="workersList" />
     </v-main>
   </v-app>

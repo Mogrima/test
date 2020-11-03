@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title>
-      Занимаемые должности
+     <h1 class="title">Занимаемые должности</h1>
       <v-spacer></v-spacer>
       <v-container class="container">
         <v-row>
@@ -13,18 +13,20 @@
           hide-details
         ></v-text-field>
       </v-row>
-      <v-row>
-        <v-col>
+      <v-row class="mt-5 justify-space-between align-center">
+        <v-col style="margin-left: -9px">
           <v-checkbox
+          class="checkbox-firedate"
             v-model="fireDateСheckbox"
             label="Показать уволенных"
+            color="green"
           ></v-checkbox>
         </v-col>
-        <v-col>
-          <v-btn elevation="3" small @click="fireOn">Принять на должность</v-btn>
+        <v-col class="mr-5" >
+          <v-btn style="border-radius: 0px" elevation="2" small color="rgb(165, 214, 167)" @click="fireOn">Принять на должность</v-btn>
         </v-col>
-        <v-col>
-          <v-btn elevation="3" small @click="fireOff" :disabled="selected.length === 0">{{`Снять с должност${isSelectedLength()}`}}</v-btn>
+        <v-col style="margin-right: -34px">
+          <v-btn style="border-radius: 0px" elevation="2" small color="rgb(165, 214, 167)" @click="fireOff" :disabled="selected.length === 0">{{`Снять с должност${isSelectedLength()}`}}</v-btn>
         </v-col>
       </v-row>
       </v-container>
@@ -47,6 +49,7 @@
           >
             <td>
               <v-checkbox
+                color="green"
                 :value="isSelected(item)"
                 @change="selectedChange(item, index)"
               ></v-checkbox>
@@ -179,11 +182,6 @@ export default {
        }
       })
     },
-    
-    open() {},
-    close() {
-      console.log("Dialog closed");
-    },
   },
   watch: {
     fireDateСheckbox: {
@@ -203,24 +201,31 @@ export default {
 </script>
 
 <style scoped>
-
 .container {
-  width: 500px;
+  width: 600px;
+}
+
+.title {
+  margin: 0;
+  margin-top: -45px;
+  font-weight: normal;
 }
 
 .col {
   padding: 0;
 }
+
+.checkbox-firedate {
+  margin-top: 0;
+  margin-bottom: -24px;
+  padding-top: 0;
+}
+
 .fire-date {
-  background-color: red;
+  background-color: rgb(255, 138, 128);
 }
 
 .fire-date:hover {
-  background-color: red !important;
-}
-
-.edit {
-  display: flex;
-  width: 250px;
+  background-color: rgb(255, 138, 128) !important;
 }
 </style>

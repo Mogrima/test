@@ -9,7 +9,7 @@
     <slot></slot>
     <template v-slot:input>
       <v-container class="lighten-5">
-    <v-row no-gutters>
+    <v-row no-gutters class="table__row mb-5">
       <v-col
         v-for="value in values"
         :key="value.label"
@@ -22,12 +22,12 @@
         ></v-text-field>
       </v-col>
     </v-row>
-    <v-row>
+    <v-row class="dialog__buttons">
         <v-col>
-          <v-btn elevation="3" small @click="cancel">Отменить</v-btn>
+          <v-btn small :text=true class="green--text" @click="cancel">Отменить</v-btn>
           </v-col>
         <v-col>
-          <v-btn elevation="3" small @click="save">Сохранить</v-btn>
+          <v-btn small :text=true class="green--text" @click="save">Сохранить</v-btn>
         </v-col>
       </v-row>
   </v-container>
@@ -55,6 +55,17 @@ export default {
 
 <style scoped>
 .container {
-  max-width: 260px;
+  max-width: 280px;
+  padding-right: 0;
+  padding-left: 0;
+  padding-bottom: 0;
+}
+
+.col:first-child {
+  padding-right: 10px !important;
+}
+
+.dialog__buttons {
+  text-align: center;
 }
 </style>
