@@ -1,43 +1,123 @@
 <template>
-  <v-simple-table>
-    <template v-slot:default>
-      <thead>
-        <tr>
-          <th class="text-left">
-            <v-checkbox v-model="globalCheckbox" />
-          </th>
-          <th class="text-left">Сотрудник</th>
-          <th class="text-left">Компания</th>
-          <th class="text-left">Должность</th>
-          <th class="text-left">Дата приема</th>
-          <th class="text-left">Дата увольнения</th>
-          <th class="text-left">Ставка</th>
-          <th class="text-left">База</th>
-          <th class="text-left">Аванс</th>
-          <th class="text-left">Почасовая</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in list" :key="item.fireDate">
-          <td><v-checkbox v-model="globalCheckbox" /></td>
-          <td>{{ item.name }}</td>
-          <td>{{ item.companyName }}</td>
-          <td>{{ item.companyName }}</td>
-          <td>{{ item.hireDate }}</td>
-          <td>{{ item.fireDate }}</td>
-          <td>{{ `${$price(item.salary)} ₽ (${item.fraction}%)` }}</td>
-          <td>{{ `${$price(item.base)} ₽` }}</td>
-          <td>{{ `${$price(item.advance)} ₽` }}</td>
-          <td><v-checkbox v-model="item.byHours" /></td>
-        </tr>
-      </tbody>
-    </template>
-  </v-simple-table>
+  <v-card>
+    <v-card-title>
+      Занимаемые должности
+      <v-spacer></v-spacer>
+      <v-container class="container">
+        <v-row>
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Поиск по сотруднику"
+          single-line
+          hide-details
+        ></v-text-field>
+      </v-row>
+      <v-row>
+        <v-col>
+          <v-checkbox
+            v-model="fireDateСheckbox"
+            label="Показать уволенных"
+          ></v-checkbox>
+        </v-col>
+        <v-col>
+          <v-btn elevation="3" small @click="fireOn">Принять на должность</v-btn>
+        </v-col>
+        <v-col>
+          <v-btn elevation="3" small @click="fireOff" :disabled="selected.length === 0">{{`Снять с должност${isSelectedLength()}`}}</v-btn>
+        </v-col>
+      </v-row>
+      </v-container>
+    </v-card-title>
+    <v-data-table
+      v-model="selected"
+      :single-select="singleSelect"
+      item-key="name"
+      show-select
+      :headers="headers"
+      :items="localList"
+      :search="search"
+    >
+      <template v-slot:body="{ items }">
+        <tbody>
+          <tr
+            v-for="(item, index) in items"
+            :key="item.name"
+            :class="item.fireDate !== null ? 'fire-date' : ''"
+          >
+            <td>
+              <v-checkbox
+                :value="isSelected(item)"
+                @change="selectedChange(item, index)"
+              ></v-checkbox>
+            </td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.companyName }}</td>
+            <td>{{ item.companyName }}</td>
+            <td>{{ item.hireDate }}</td>
+            <td>{{ item.fireDate }}</td>
+            <td v-if="item.fireDate == null">
+              <TableDialog :values="[
+                {v :item.salary, label: 'Ставка, руб'}, 
+                {v: item.fraction, label: 'Ставка, %'}]"
+                @save="newValues => {
+                  item.salary = newValues[0].v
+                  item.fraction = newValues[1].v
+                }"
+              >
+                {{ `${$price(item.salary)} ₽ (${item.fraction}%)` }}
+              </TableDialog>
+            </td>
+            <td v-else>
+              {{ `${$price(item.salary)} ₽ (${item.fraction}%)` }}
+            </td>
+            <td v-if="item.fireDate == null">
+              <TableDialog :values="[
+                {v :item.base, label: 'База'}]"
+                @save="newValues => {
+                  item.base = newValues[0].v
+                }"
+              >
+                {{ `${$price(item.base)} ₽` }}
+              </TableDialog>
+            </td>
+            <td v-else>
+              {{ `${$price(item.base)} ₽` }}
+            </td>
+            <td v-if="item.fireDate == null">
+             <TableDialog :values="[
+                {v :item.advance, label: 'Аванс'}]"
+                @save="newValues => {
+                  item.advance = newValues[0].v
+                }">
+                 {{ `${$price(item.advance)} ₽` }}
+              </TableDialog>
+            </td>
+            <td v-else>
+               {{ `${$price(item.advance)} ₽` }}
+            </td>
+            <td>
+              <v-simple-checkbox
+                v-model="item.byHours"
+                disabled
+              ></v-simple-checkbox>
+            </td>
+          </tr>
+        </tbody>
+      </template>
+    </v-data-table>
+  </v-card>
 </template>
 
 <script>
+import moment from 'moment'
+import TableDialog from './Table-dialog'
+
 export default {
   name: "Table",
+  components: {
+    TableDialog
+  },
   props: {
     list: {
       default: () => [],
@@ -46,8 +126,101 @@ export default {
   },
   data() {
     return {
-      globalCheckbox: false
+      globalCheckbox: false,
+      fireDateСheckbox: true,
+      search: "",
+      singleSelect: false,
+      selected: [],
+      headers: [
+        { text: "Сотрудник", value: "name" },
+        { text: "Компания", value: "companyName" },
+        { text: "Должность", value: "companyName" },
+        { text: "Дата приема", value: "hireDate" },
+        { text: "Дата увольнения", value: "fireDate" },
+        { text: "Ставка", value: "salary" },
+        { text: "База", value: "base" },
+        { text: "Аванс", value: "advance" },
+        { text: "Почасовая", value: "byHours" },
+      ],
+      localList: this.list,
+    };
+  },
+  methods: {
+    isSelected(item) {
+      return this.selected.some((someItem) => someItem === item);
+    },
+    selectedChange(item) {
+      if (!item) return;
+      let isSelected = this.selected.some((someItem) => someItem === item);
+      if (isSelected) {
+        let index = this.selected.findIndex((findItem) => findItem === item);
+        this.selected.splice(index, 1);
+      } else {
+        this.selected.push(item);
+      }
+    },
+    isSelectedLength() {
+      return this.selected.length < 2 ? 'и' : 'ей'
+    },
+    fireOn() {
+      this.localList.forEach(item => {
+        let selectedItem = this.selected.find((findItem) => findItem === item);
+       if(selectedItem && selectedItem.fireDate !== null) {
+         item.fireDate = null
+         item.hireDate = moment().format('YYYY-M-DD')
+       }
+      })
+    },
+    fireOff() {
+      this.localList.forEach(item => {
+        let selectedItem = this.selected.find((findItem) => findItem === item);
+       if(selectedItem && selectedItem.fireDate === null) {
+         item.fireDate = moment().format('YYYY-M-DD')
+       }
+      })
+    },
+    
+    open() {},
+    close() {
+      console.log("Dialog closed");
+    },
+  },
+  watch: {
+    fireDateСheckbox: {
+      immediate: true,
+      handler(v) {
+        if(v) {
+          this.localList = this.list
+        } else {
+          this.localList = this.list.filter(item => {
+            return item.fireDate === null
+          }) 
+        }
+      }
     }
-  }
+  },
 };
 </script>
+
+<style scoped>
+
+.container {
+  width: 500px;
+}
+
+.col {
+  padding: 0;
+}
+.fire-date {
+  background-color: red;
+}
+
+.fire-date:hover {
+  background-color: red !important;
+}
+
+.edit {
+  display: flex;
+  width: 250px;
+}
+</style>
