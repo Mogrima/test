@@ -23,10 +23,10 @@
           ></v-checkbox>
         </v-col>
         <v-col class="mr-5" >
-          <v-btn style="border-radius: 0px" elevation="2" small color="rgb(165, 214, 167)" @click="fireOn">Принять на должность</v-btn>
+          <v-btn style="border-radius: 0px" elevation="2" small color="rgb(165, 214, 167)" @click="fireOn" :disabled="selectedIsHire">Принять на должность</v-btn>
         </v-col>
         <v-col style="margin-right: -34px">
-          <v-btn style="border-radius: 0px" elevation="2" small color="rgb(165, 214, 167)" @click="fireOff" :disabled="selected.length === 0">{{`Снять с должност${isSelectedLength()}`}}</v-btn>
+          <v-btn style="border-radius: 0px" elevation="2" small color="rgb(165, 214, 167)" @click="fireOff" :disabled="selectedIsFire">{{`Снять с должност${isSelectedLength()}`}}</v-btn>
         </v-col>
       </v-row>
       </v-container>
@@ -37,7 +37,7 @@
       item-key="name"
       show-select
       :headers="headers"
-      :items="localList"
+      :items="filtredList"
       :search="search"
     >
       <template v-slot:body="{ items }">
@@ -131,7 +131,7 @@ export default {
     return {
       globalCheckbox: false,
       fireDateСheckbox: true,
-      search: "",
+      search: '',
       singleSelect: false,
       selected: [],
       headers: [
@@ -170,7 +170,7 @@ export default {
         let selectedItem = this.selected.find((findItem) => findItem === item);
        if(selectedItem && selectedItem.fireDate !== null) {
          item.fireDate = null
-         item.hireDate = moment().format('YYYY-M-DD')
+         item.hireDate = moment().format('DD.M.YYYY')
        }
       })
     },
@@ -178,10 +178,31 @@ export default {
       this.localList.forEach(item => {
         let selectedItem = this.selected.find((findItem) => findItem === item);
        if(selectedItem && selectedItem.fireDate === null) {
-         item.fireDate = moment().format('YYYY-M-DD')
+         item.fireDate = moment().format('DD.M.YYYY')
        }
       })
     },
+  },
+  computed: {
+    filtredList(){
+       let searchString = this.search;
+       return this.localList.filter((worker) => {
+          return worker.name.includes(searchString);
+       })
+     },
+     selectedIsFire() {
+       return this.selected.every(item => {
+         return item.fireDate !== null
+       })
+     },
+     selectedIsHire() {
+       if(this.selected.length == 0) {
+         return false
+       }
+       return this.selected.every(item => {
+         return item.fireDate === null
+       })
+     }
   },
   watch: {
     fireDateСheckbox: {
@@ -195,7 +216,7 @@ export default {
           }) 
         }
       }
-    }
+    },
   },
 };
 </script>
