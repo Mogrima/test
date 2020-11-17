@@ -72,7 +72,7 @@
             </td>
             <td>{{ item.name }}</td>
             <td>{{ item.companyName }}</td>
-            <td>{{ item.companyName }}</td>
+            <td>{{ item.positionName }}</td>
             <td>{{ item.hireDate }}</td>
             <td>{{ item.fireDate }}</td>
             <td v-if="item.fireDate == null">
@@ -81,6 +81,7 @@
                   { v: item.salary, label: 'Ставка, руб' },
                   { v: item.fraction, label: 'Ставка, %' },
                 ]"
+                :list="[localList[index]]"
                 @save="
                   (newValues) => {
                     item.salary = newValues[0].v;
@@ -97,6 +98,7 @@
             <td v-if="item.fireDate == null">
               <TableDialog
                 :values="[{ v: item.base, label: 'База' }]"
+                :list="[localList[index]]"
                 @save="
                   (newValues) => {
                     item.base = newValues[0].v;
@@ -112,6 +114,7 @@
             <td v-if="item.fireDate == null">
               <TableDialog
                 :values="[{ v: item.advance, label: 'Аванс' }]"
+                :list="[localList[index]]"
                 @save="
                   (newValues) => {
                     item.advance = newValues[0].v;
@@ -171,8 +174,7 @@ export default {
         { text: "Аванс", value: "advance" },
         { text: "Почасовая", value: "byHours" },
       ],
-      directory: [],
-      localList: this.list,
+      localList: [],
     };
   },
   async mounted() {
@@ -200,8 +202,8 @@ export default {
     				`
         },
       })
-      this.directory = result.data.data.getOccupations
-      console.log(this.directory)
+      this.localList = result.data.data.getOccupations
+      console.log(this.localList[2])
     } catch (error) {
       console.error(error);
     }
@@ -244,7 +246,7 @@ export default {
   computed: {
     filtredList() {
       let searchString = this.search;
-      return this.directory.filter((worker) => {
+      return this.localList.filter((worker) => {
         return worker.name.includes(searchString);
       });
     },
